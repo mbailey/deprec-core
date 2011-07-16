@@ -1,5 +1,8 @@
-# Copyright 2006-2008 by Mike Bailey. All rights reserved.
+# Copyright 2006-2011 by Mike Bailey. All rights reserved.
 Capistrano::Configuration.instance(:must_exist).load do 
+
+  # Connect deprec:db to deprec:mysql, deprec:web to deprec:apache, etc
+  on :load, 'deprec:connect_canonical_tasks' 
 
   # Set the value if not already set
   # This method is accessible to all recipe files
@@ -16,7 +19,7 @@ Capistrano::Configuration.instance(:must_exist).load do
   _cset :rake, 'rake'
   
   # Deprec checks here for local versions of config templates before it's own
-  set :local_template_dir, File.join('config','templates')
+  _cset :local_template_dir, File.join('config','templates')
   
   # The following two Constants contain details of the configuration 
   # files used by each service. They're used when generating config
@@ -43,59 +46,49 @@ Capistrano::Configuration.instance(:must_exist).load do
   CHOICES_DATABASE  = [:mysql, :postgresql, :sqlite, :none]
   # 
   # Service defaults
-  set :ruby_vm_type,    :mri
-  set :web_server_type, :apache
-  set :app_server_type, :passenger
-  set :db_server_type,  :mysql
+  _cset :ruby_vm_type,    :mri
+  _cset :web_server_type, :apache
+  _cset :app_server_type, :passenger
+  _cset :db_server_type,  :mysql
 
   # Prompt user for missing values if not supplied
-  set(:application) do
+  _cset(:application) do
     Capistrano::CLI.ui.ask "Enter name of project(no spaces)" do |q|
       q.validate = /^[0-9a-z_]*$/
     end
   end 
 
-  set(:domain) do
+  _cset(:domain) do
     Capistrano::CLI.ui.ask "Enter domain name for project" do |q|
       q.validate = /^[0-9a-z_\.]*$/
     end
   end
 
-  set(:repository) do
+  _cset(:repository) do
     Capistrano::CLI.ui.ask "Enter repository URL for project" do |q|
       # q.validate = //
     end
   end
 
-  # some tasks run commands requiring special user privileges on remote servers
-  # these tasks will run the commands with:
-  #   :invoke_command "command", :via => run_method
-  # override this value if sudo is not an option
-  # in that case, your use will need the correct privileges
-  set :run_method, :sudo 
-
-  set(:backup_dir) { '/var/backups'}  
+  _cset :backup_dir, '/var/backups'  
 
   # XXX rails deploy stuff
-  set :apps_root,    '/srv'  # parent dir for apps
-  set(:deploy_to)    { File.join(apps_root, application) } # dir for current app
-  set(:current_path) { File.join(deploy_to, "current") }
-  set(:shared_path)  { File.join(deploy_to, "shared") }
+  _cset :apps_root,    '/srv'  # parent dir for apps
+  _cset(:deploy_to)    { File.join(apps_root, application) } # dir for current app
+  _cset(:current_path) { File.join(deploy_to, "current") }
+  _cset(:shared_path)  { File.join(deploy_to, "shared") }
 
   # XXX more rails deploy stuff?
 
-  set :user, ENV['USER']         # user who is deploying
-  set :group, 'deploy'           # deployment group
-  set(:group_src) { group }      # group ownership for src dir
-  set :src_dir, '/usr/local/src' # 3rd party src on servers lives here
-  set(:web_server_aliases) { domain.match(/^www/) ? [] : ["www.#{domain}"] }    
-
-  # XXX for some reason this is causing "before deprec:rails:install" to be executed twice
-  on :load, 'deprec:connect_canonical_tasks' 
+  _cset :user, ENV['USER']         # user who is deploying
+  _cset :group, 'deploy'           # deployment group
+  _cset(:group_src) { group }      # group ownership for src dir
+  _cset :src_dir, '/usr/local/src' # 3rd party src on servers lives here
+  _cset(:web_server_aliases) { domain.match(/^www/) ? [] : ["www.#{domain}"] }    
 
   # It can be useful to know the user running this command
   # even when USER is set to someone else. Sorry windows!
-  set :current_user, `whoami`.chomp
+  _cset :current_user, `whoami`.chomp
 
   namespace :deprec do
     
