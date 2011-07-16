@@ -106,7 +106,6 @@ Capistrano::Configuration.instance(:must_exist).load do
       namespaces_to_connect.each do |server, choice|
         server_type = send(choice).to_sym
         if server_type != :none
-          metaclass.send(:define_method, server) { namespaces[server] } # XXX unnecessary?
           namespaces[server] = deprec.send(server_type)          
         end
       end
