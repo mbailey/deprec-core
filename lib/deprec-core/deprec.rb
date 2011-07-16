@@ -102,7 +102,6 @@ Capistrano::Configuration.instance(:must_exist).load do
                                 :db  => :db_server_type,
                                 :ruby => :ruby_vm_type
                               }
-      metaclass = class << self; self; end # XXX unnecessary?
       namespaces_to_connect.each do |server, choice|
         server_type = send(choice).to_sym
         if server_type != :none
