@@ -13,6 +13,9 @@ module Deprec2
     ENV['ROLES'] = old_roles.to_s unless ENV['HOSTS']
   end
 
+  def rake_remote(task_name)
+      run "cd #{current_path} && RAILS_ENV=#{rails_env} #{rake} #{task_name}"
+  end
   
   # Temporarily ignore ROLES and HOSTS
   def ignoring_roles_and_hosts
