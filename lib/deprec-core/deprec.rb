@@ -72,6 +72,17 @@ Capistrano::Configuration.instance(:must_exist).load do
 
   _cset :backup_dir, '/var/backups'  
 
+  # XXX We *probably* want these set
+  # Must be set for the password prompt from git to work
+  # default_run_options[:pty] = true  
+  # ssh_options[:forward_agent] = true
+
+  # SCM
+  _cset :scm, "git"
+  _cset :user, "deploy" 
+  _cset :deploy_via, :remote_cache
+  _cset :branch, "master"
+
   # XXX rails deploy stuff
   _cset :apps_root,    '/srv'  # parent dir for apps
   _cset(:deploy_to)    { File.join(apps_root, application) } # dir for current app
@@ -80,7 +91,6 @@ Capistrano::Configuration.instance(:must_exist).load do
 
   # XXX more rails deploy stuff?
 
-  _cset :user, ENV['USER']         # user who is deploying
   _cset :group, 'deploy'           # deployment group
   _cset(:group_src) { group }      # group ownership for src dir
   _cset :src_dir, '/usr/local/src' # 3rd party src on servers lives here
