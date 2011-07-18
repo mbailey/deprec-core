@@ -116,6 +116,8 @@ Capistrano::Configuration.instance(:must_exist).load do
         server_type = send(choice).to_sym
         if server_type != :none
           namespaces[server] = deprec.send(server_type)          
+        rescue
+          nil
         end
       end
     end
