@@ -1,7 +1,16 @@
 deprec-core changelog
 =====================
 
+= 3.1.6  (Jul 22, 2011)
+
+  * Added TEMPLATE_LOAD_PATH
+    
+    deprec-core will search this path for the template it's asked
+    to render.
+    
+  * Did some reorganization of files.
+
 = 3.1.5  (Jul 17, 2011)
 
-* Extracted the guts of deprec into this gem
+  * Extracted the guts of deprec into this gem
 
