@@ -3,6 +3,11 @@ require 'capistrano'
 require 'fileutils'
 
 module Deprec2
+
+  # Run rake task on remote server(s)
+  def rake_remote(task_name)
+      run "cd #{current_path} && RAILS_ENV=#{rails_env} #{rake} #{task_name}"
+  end
   
   # Temporarily modify ROLES if HOSTS not set
   # Capistrano's default behaviour is for HOSTS to override ROLES
@@ -11,10 +16,6 @@ module Deprec2
     ENV['ROLES'] = roles.to_s unless ENV['HOSTS']
     yield
     ENV['ROLES'] = old_roles.to_s unless ENV['HOSTS']
-  end
-
-  def rake_remote(task_name)
-      run "cd #{current_path} && RAILS_ENV=#{rails_env} #{rake} #{task_name}"
   end
   
   # Temporarily ignore ROLES and HOSTS
@@ -28,7 +29,6 @@ module Deprec2
     ENV['HOSTS'] = old_hosts
   end
   
-  DEPREC_TEMPLATES_BASE = File.join(File.dirname(__FILE__), 'templates')
 
   # Render template (usually a config file) 
   # 
@@ -61,15 +61,16 @@ module Deprec2
     # If you don't specify the location with the local_template_dir option
     # it defaults to config/templates.
     # e.g. config/templates/nginx/nginx.conf.erb
-    local_template = File.join(local_template_dir, app.to_s, template)
-    if File.exists?(local_template)
-      puts
-      puts "Using local template (#{local_template})"
-      template = ERB.new(IO.read(local_template), nil, '-')
-    else
-      template = ERB.new(IO.read(File.join(DEPREC_TEMPLATES_BASE, app.to_s, template)), nil, '-')
+    template_path = ''
+    TEMPLATE_LOAD_PATH.each do |dir|
+      template_path = File.join(dir, app.to_s, template)
+      if File.exists?(template_path)
+        template = ERB.new(IO.read(template_path), nil, '-')
+        break
+      end
     end
     rendered_template = template.result(binding)
+    puts "Using #{template_path}"
   
     if remote 
       # render to remote machine
@@ -209,35 +210,29 @@ module Deprec2
     switches += " --shell=#{options[:shell]} " if options[:shell]
     switches += ' --create-home ' unless options[:homedir] == false
     switches += " --gid #{options[:group]} " unless options[:group].nil?
-    invoke_command "grep '^#{user}:' /etc/passwd || #{sudo} /usr/sbin/useradd #{switches} #{user}", 
-    :via => run_method
+    run "grep '^#{user}:' /etc/passwd || #{sudo} /usr/sbin/useradd #{switches} #{user}" 
   end
 
   # create a new group on target system
   def groupadd(group, options={})
-    via = options.delete(:via) || run_method
     # XXX I don't like specifying the path to groupadd - need to sort out paths before long
-    invoke_command "grep '#{group}:' /etc/group || #{sudo} /usr/sbin/groupadd #{group}", :via => via
+    run "grep '#{group}:' /etc/group || #{sudo} /usr/sbin/groupadd #{group}"
   end
 
   # add group to the list of groups this user belongs to
   def add_user_to_group(user, group)
-    invoke_command "groups #{user} | grep ' #{group} ' || #{sudo} /usr/sbin/usermod -G #{group} -a #{user}",
-    :via => run_method
+    run "groups #{user} | grep ' #{group} ' || #{sudo} /usr/sbin/usermod -G #{group} -a #{user}"
   end
 
   # create directory if it doesn't already exist
   # set permissions and ownership
   # XXX move mode, path and
   def mkdir(path, options={})
-    via = options.delete(:via) || :run
-    # XXX need to make sudo commands wrap the whole command (sh -c ?)
-    # XXX removed the extra 'sudo' from after the '||' - need something else
-    invoke_command "test -d #{path} || #{sudo if via == :sudo} mkdir -p #{path}"
-    invoke_command "chmod #{sprintf("%3o",options[:mode]||0755)} #{path}", :via => via if options[:mode]
-    invoke_command "chown -R #{options[:owner]} #{path}", :via => via if options[:owner]
-    groupadd(options[:group], :via => via) if options[:group]
-    invoke_command "chgrp -R #{options[:group]} #{path}", :via => via if options[:group]
+    run "test -d #{path} || #{sudo} mkdir -p #{path}"
+    run "chmod #{sprintf("%3o",options[:mode]||0755)} #{path}" if options[:mode]
+    run "chown -R #{options[:owner]} #{path}" if options[:owner]
+    groupadd(options[:group]) if options[:group]
+    run "chgrp -R #{options[:group]} #{path}" if options[:group]
   end
   
   def create_src_dir
@@ -270,7 +265,6 @@ module Deprec2
       when :http
         # ensure wget is installed
         apt.install( {:base => %w(wget)}, :stable )
-        # XXX replace with invoke_command
         run "cd #{src_dir} && test -f #{src_pkg[:filename]} #{md5_clause} || #{sudo} wget --quiet --timestamping #{src_pkg[:url]}"
 
       when :deb
@@ -375,7 +369,7 @@ module Deprec2
   end
 
   def invoke_with_input(shell_command, input_query=/^Password/, response=nil)
-    handle_command_with_input(run_method, shell_command, input_query, response)
+    handle_command_with_input(:sudo, shell_command, input_query, response)
   end
 
   ##

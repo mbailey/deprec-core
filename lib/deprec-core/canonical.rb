@@ -8,6 +8,46 @@
 # stubs are so they'll be included in the output of "cap -T"
 #
 Capistrano::Configuration.instance(:must_exist).load do 
+
+  # deprec defines some generic recipes for common services
+  # including ruby interpreter, web, app and database servers
+  #
+  # They default to my current favourites which you can over ride
+  #  
+  # Service options
+  CHOICES_RUBY_VM   = [:mri, :ree]
+  CHOICES_WEBSERVER = [:apache, :none] # :nginx not recipes out of date
+  CHOICES_APPSERVER = [:passenger, :none] # any colour you like guys
+  CHOICES_DATABASE  = [:mysql, :postgresql, :sqlite, :none]
+  # 
+  # Service defaults
+  _cset :ruby_vm_type,    :mri
+  _cset :web_server_type, :apache
+  _cset :app_server_type, :passenger
+  _cset :db_server_type,  :mysql
+
+  # Connect deprec:db to deprec:mysql, deprec:web to deprec:apache, etc
+  on :load, 'deprec:connect_canonical_tasks'
+
+  namespace :deprec do
+    task :connect_canonical_tasks do
+      # link application specific recipes into canonical task names
+      # e.g. deprec:web:restart => deprec:nginx:restart 
+
+
+      namespaces_to_connect = { :web => :web_server_type,
+                                :app => :app_server_type,
+                                :db  => :db_server_type,
+                                :ruby => :ruby_vm_type
+                              }
+      namespaces_to_connect.each do |server, choice|
+        server_type = send(choice).to_sym
+        if server_type != :none && deprec.respond_to?(server_type)
+          namespaces[server] = deprec.send(server_type)
+        end
+      end
+    end
+  end
   
   %w(ruby).each do |package|
     namespace "deprec:#{package}" do
