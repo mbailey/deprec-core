@@ -13,6 +13,7 @@ Gem::Specification.new do |s|
 
   s.rubyforge_project = "deprec-core"
 
+  s.add_dependency('rake')
   s.add_dependency('capistrano', '>= 2.6.0')
   s.add_dependency('capistrano-ext', '>= 1.2.1')
 
