@@ -1,9 +1,10 @@
 deprec-core changelog
 =====================
 
-= 3.1.8  (Jul 28, 2011)
+= 3.1.9  (Jul 28, 2011)
 
   * Moved rubygem deps from deprec to deprec-core
+  * Added Rake as a Gem dependency
 
 = 3.1.7  (Jul 22, 2011)
 
