@@ -1,6 +1,10 @@
 deprec-core changelog
 =====================
 
+= 3.1.10  (Jul 29, 2011)
+
+  * bugfix: use #{sudo} when setting owner
+
 = 3.1.9  (Jul 28, 2011)
 
   * Moved rubygem deps from deprec to deprec-core
