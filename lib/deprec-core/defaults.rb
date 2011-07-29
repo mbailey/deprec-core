@@ -57,7 +57,7 @@ Capistrano::Configuration.instance(:must_exist).load do
   # even when USER is set to someone else. Sorry windows!
   _cset :current_user, `whoami`.chomp
 
-  # Only used by vmbuilder_plugins
-  _cset :run_method, 'sudo'
+  # Used by vmbuilder_plugins and Capistrano's deploy tasks
+  _cset :run_method, :sudo
 
 end
