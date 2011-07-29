@@ -1,7 +1,7 @@
 deprec-core changelog
 =====================
 
-= 3.1.10  (Jul 29, 2011)
+= 3.1.11  (Jul 29, 2011)
 
   * bugfix: use #{sudo} when setting owner
 
