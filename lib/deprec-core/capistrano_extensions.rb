@@ -4,6 +4,22 @@ require 'fileutils'
 
 module Deprec2
 
+  # Pretty coloured output in terminal
+  #
+  # Embed in a String to clear all previous ANSI sequences.
+  CLEAR   = "\e[0m"
+  BOLD    = "\e[1m"
+  #
+  # # Colors
+  BLACK   = "\e[30m"
+  RED     = "\e[31m"
+  GREEN   = "\e[32m"
+  YELLOW  = "\e[33m"
+  BLUE    = "\e[34m"
+  MAGENTA = "\e[35m"
+  CYAN    = "\e[36m"
+  WHITE   = "\e[37m"
+
   # Run rake task on remote server(s)
   def rake_remote(task_name)
       run "cd #{current_path} && RAILS_ENV=#{rails_env} #{rake} #{task_name}"
@@ -70,7 +86,7 @@ module Deprec2
       end
     end
     rendered_template = template.result(binding)
-    puts "Using #{template_path}"
+    # puts "Using #{template_path}" # work out which template is being used
   
     if remote 
       # render to remote machine
@@ -85,18 +101,18 @@ module Deprec2
       path_dir = File.dirname(File.expand_path(full_path))
       if File.exists?(full_path)
         if IO.read(full_path) == rendered_template
-          puts "[skip] Identical file exists (#{full_path})."
+          puts "#{BLUE}    identical#{CLEAR}  #{full_path}"
           return false
         elsif overwrite?(full_path, rendered_template)
           File.delete(full_path)
         else
-          puts "[skip] Not overwriting #{full_path}"
+          puts "#{YELLOW}         skip#{CLEAR}  #{full_path}"
           return false
         end
       end
       FileUtils.mkdir_p "#{path_dir}" if ! File.directory?(path_dir)
       File.open(File.expand_path(full_path), 'w'){|f| f.write rendered_template }
-      puts "[done] #{full_path} written"
+      puts "#{GREEN}       create#{CLEAR}  #{full_path}"
     else
       # render to string
       return rendered_template
@@ -112,11 +128,9 @@ module Deprec2
       end
     end
     
-    # XXX add :always and :never later - not sure how to set persistent value from here
-    # response = Capistrano::CLI.ui.ask "File exists. Overwrite? ([y]es, [n]o, [a]lways, n[e]ver)" do |q|
     puts
-    response = Capistrano::CLI.ui.ask "File exists (#{full_path}). 
-    Overwrite? ([y]es, [n]o, [d]iff)" do |q|
+    response = Capistrano::CLI.ui.ask "#{RED}     conflict#{CLEAR}  #{full_path} 
+   Overwrite?  ([y]es, [n]o, [d]iff)" do |q|
       q.default = 'n'
     end
     
