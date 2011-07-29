@@ -215,7 +215,6 @@ module Deprec2
 
   # create a new group on target system
   def groupadd(group, options={})
-    # XXX I don't like specifying the path to groupadd - need to sort out paths before long
     run "grep '#{group}:' /etc/group || #{sudo} /usr/sbin/groupadd #{group}"
   end
 
@@ -230,9 +229,10 @@ module Deprec2
   def mkdir(path, options={})
     run "test -d #{path} || #{sudo} mkdir -p #{path}"
     run "chmod #{sprintf("%3o",options[:mode]||0755)} #{path}" if options[:mode]
-    run "chown -R #{options[:owner]} #{path}" if options[:owner]
+    # We only use sudo when setting owner and/or group
+    run "#{sudo} chown -R #{options[:owner]} #{path}" if options[:owner]
     groupadd(options[:group]) if options[:group]
-    run "chgrp -R #{options[:group]} #{path}" if options[:group]
+    run "#{sudo} chgrp -R #{options[:group]} #{path}" if options[:group]
   end
   
   def create_src_dir
