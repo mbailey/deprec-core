@@ -1,8 +1,9 @@
 deprec-core changelog
 =====================
 
-= 3.1.11  (Jul 29, 2011)
+= 3.1.12  (Jul 30, 2011)
 
+  * added pretty colors to terminal output
   * bugfix: use #{sudo} when setting owner
 
 = 3.1.9  (Jul 28, 2011)
