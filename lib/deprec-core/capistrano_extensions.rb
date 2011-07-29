@@ -95,8 +95,6 @@ module Deprec2
         end
       end
       FileUtils.mkdir_p "#{path_dir}" if ! File.directory?(path_dir)
-      # added line above to make windows compatible
-      # system "mkdir -p #{path_dir}" if ! File.directory?(path_dir) 
       File.open(File.expand_path(full_path), 'w'){|f| f.write rendered_template }
       puts "[done] #{full_path} written"
     else
@@ -225,14 +223,20 @@ module Deprec2
 
   # create directory if it doesn't already exist
   # set permissions and ownership
-  # XXX move mode, path and
   def mkdir(path, options={})
     run "test -d #{path} || #{sudo} mkdir -p #{path}"
-    run "chmod #{sprintf("%3o",options[:mode]||0755)} #{path}" if options[:mode]
-    # We only use sudo when setting owner and/or group
-    run "#{sudo} chown -R #{options[:owner]} #{path}" if options[:owner]
-    groupadd(options[:group]) if options[:group]
-    run "#{sudo} chgrp -R #{options[:group]} #{path}" if options[:group]
+    if options[:mode]
+      run "#{sudo} chmod #{sprintf("%3o",options[:mode]||0755)} #{path}" 
+    end
+    if options[:owner]
+      run "#{sudo} chown -R #{options[:owner]} #{path}" 
+    end
+    if options[:group]
+      groupadd(options[:group]) 
+    end
+    if options[:group]
+      run "#{sudo} chgrp -R #{options[:group]} #{path}" 
+    end
   end
   
   def create_src_dir
