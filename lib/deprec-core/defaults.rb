@@ -35,7 +35,7 @@ Capistrano::Configuration.instance(:must_exist).load do
   # ssh_options[:forward_agent] = true
 
   # SCM
-  _cset :scm, "git"
+  set :scm, "git" # This is set to :svn by Capistrano deploy recipes
   _cset :user, "deploy" 
   _cset :deploy_via, :remote_cache
   _cset :branch, "master"
