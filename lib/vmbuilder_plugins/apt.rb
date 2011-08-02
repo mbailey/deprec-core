@@ -24,12 +24,13 @@ module Apt
 
   # Default apt-get command - reduces any interactivity to the minimum.
   APT_GET="DEBCONF_TERSE='yes' DEBIAN_PRIORITY='critical' DEBIAN_FRONTEND=noninteractive apt-get" 
+  UPDATE = { :has_been_run => false }
 
   # Run the apt install program across the package list in 'packages'. 
   # Select those packages referenced by <tt>:base</tt> and the +version+
   # of the distribution you want to use.
   def install(packages, version, options={})
-    update
+    update :once_only => true
     special_options="--allow-unauthenticated" if version != :stable
     send(run_method, %{
       sh -c "#{APT_GET} -qyu --force-yes #{special_options.to_s} install #{package_list(packages, version)}"
@@ -48,20 +49,25 @@ module Apt
 
   # Run an apt distribution upgrade
   def dist_upgrade(options={})
-    update
+    update :once_only => true
     send(run_method, %{sh -c "#{APT_GET} -qy dist-upgrade"}, options)
   end
 
   # Run an apt upgrade. Use dist_upgrade instead if you want to upgrade
   # the critical base packages.
   def upgrade(options={})
-    update
+    update :once_only => true
     send(run_method, %{sh -c "#{APT_GET} -qy upgrade"}, options)
   end
 
   # Run an apt update.
   def update(options={})
-    send(run_method, %{sh -c "#{APT_GET} -qy update"}, options)
+    if options[:once_only] && UPDATE[:has_been_run]
+      return false
+    else
+      send(run_method, %{sh -c "#{APT_GET} -qy update"}, options)
+      UPDATE[:has_been_run] = true
+    end
   end
 
   # RPM package install via alien
