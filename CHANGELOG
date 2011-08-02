@@ -1,6 +1,10 @@
 deprec-core changelog
 =====================
 
+= 3.1.13  (Aug  2, 2011)
+
+  * Only run 'apt-get update' once per capistrano run
+
 = 3.1.12  (Jul 30, 2011)
 
   * added pretty colors to terminal output
