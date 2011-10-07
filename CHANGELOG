@@ -1,6 +1,10 @@
 deprec-core changelog
 =====================
 
+= 3.1.15  (Oct  7, 2011)
+
+  * Don't default to using sudo
+
 = 3.1.13  (Aug  2, 2011)
 
   * Don't set :user.

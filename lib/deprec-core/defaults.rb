@@ -56,7 +56,8 @@ Capistrano::Configuration.instance(:must_exist).load do
   # even when USER is set to someone else. Sorry windows!
   _cset :current_user, `whoami`.chomp
 
+  # XXX This was breaking things! Don't default to sudo
   # Used by vmbuilder_plugins and Capistrano's deploy tasks
-  _cset :run_method, :sudo
+  # _cset :run_method, :sudo
 
 end
